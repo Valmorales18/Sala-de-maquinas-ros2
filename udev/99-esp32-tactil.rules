@@ -1,0 +1,18 @@
+# Regla udev para el CYD (ESP32-2432S028), que usa un conversor USB-serial CH340.
+# Crea el enlace estable /dev/esp32_tactil -> /dev/ttyUSBx, accesible para el grupo dialout.
+#
+# Verificar el VID:PID con el CYD conectado:
+#   lsusb | grep -i ch340      ->  ... ID 1a86:7523 QinHeng Electronics CH340 serial converter
+#
+# Instalar:
+#   sudo cp udev/99-esp32-tactil.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#   ls -l /dev/esp32_tactil
+#
+# Si hay VARIOS CH340 conectados (otro ESP32, un Arduino clon...), esta regla los
+# enlazaría a todos con el mismo nombre. Filtra por uno de estos (ojo: muchos CH340
+# NO tienen número de serie, en ese caso usa KERNELS, que depende del puerto USB físico):
+#   udevadm info -a -n /dev/ttyUSB0 | grep -E 'ATTRS\{serial\}|KERNELS'
+# y añade a la regla, por ejemplo:  ATTRS{serial}=="XXXX"   o   KERNELS=="1-2:1.0"
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="esp32_tactil", GROUP="dialout", MODE="0660"
