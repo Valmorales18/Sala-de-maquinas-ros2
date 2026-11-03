@@ -1,6 +1,6 @@
 # La sala de máquinas de ROS 2 — joystick táctil para turtlesim
 
-Material de la charla [**"La sala de máquinas de ROS 2"**](ENLACE_A_LA_CHARLA) (ROS Meetup 2026): una pantalla táctil ESP32-2432S028 (CYD) que mueve la tortuga de turtlesim por USB.
+Material de la charla [**"La sala de máquinas de ROS 2"**](https://luma.com/dc5m2f13) (ROS MeetUp Cartagena 2026, 7 de noviembre, UTB · [diapositivas](https://www.canva.com/d/1zZUh7bgfFz6q4D)): una pantalla táctil ESP32-2432S028 (CYD) que mueve la tortuga de turtlesim por USB.
 
 ```
 pantalla → XPT2046 → ESP32 → USB (CH340) → kernel → /dev/ttyUSB0 → driver_tactil → /turtle1/cmd_vel → turtlesim
