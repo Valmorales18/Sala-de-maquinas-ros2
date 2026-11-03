@@ -52,29 +52,65 @@ Si no usas un display braille, quítalo: `sudo apt remove brltty` (o `sudo syste
 
 ## ROS 2 (Lyrical Luth)
 
+### Compilar (una vez, y cada vez que cambies el código)
+
 ```bash
-cd ros2_ws
+cd ~/Documentos/ROS_MEETUP_CARTAGENA/ros2_ws
 source /opt/ros/lyrical/setup.bash
 colcon build
-source install/setup.bash
-ros2 launch cyd_teleop demo.launch.py                     # usa /dev/esp32_tactil
-ros2 launch cyd_teleop demo.launch.py port:=/dev/ttyUSB0  # sin la regla udev
 ```
-
-En otras terminales (con el `source install/setup.bash`):
-
-```bash
-ros2 topic echo /tactil/raw        # la letra tal como llega del serial
-ros2 topic echo /turtle1/cmd_vel   # el Twist que recibe turtlesim
-```
-
-Parámetros de `driver_tactil`: `port` (`/dev/esp32_tactil`), `baud` (115200), `linear_speed` (2.0), `angular_speed` (2.0), `timeout_s` (0.5: si no llegan letras válidas, publica un Twist en cero), `cmd_topic` (`/turtle1/cmd_vel`). Si el puerto no existe o se desconecta, el nodo reintenta cada 2 s.
 
 Pruebas: `colcon test --packages-select cyd_teleop && colcon test-result --verbose`.
+
+### Lanzar la demo paso a paso
+
+1. **Conecta el CYD** y comprueba que Linux lo ve:
+   ```bash
+   lsusb | grep 1a86      # debe salir 1a86:7523 ... CH340
+   ls /dev/ttyUSB*        # normalmente /dev/ttyUSB0
+   ```
+   Si no aparece nada, es el cable (muchos solo cargan) o el conector: en algunos CYD el USB-C no funciona con cables C a C; usa uno **USB-A a USB-C** o el micro-USB.
+
+2. **Cierra el Monitor Serie de Arduino** (y cualquier `cat`/`screen` sobre el puerto). Solo un programa puede leerlo a la vez; si no, el nodo dice `Device or resource busy`. Para ver quién lo tiene: `fuser -v /dev/ttyUSB0`.
+
+3. **Lanza turtlesim + el driver** en una terminal:
+   ```bash
+   cd ~/Documentos/ROS_MEETUP_CARTAGENA/ros2_ws
+   source /opt/ros/lyrical/setup.bash
+   source install/setup.bash
+   ros2 launch cyd_teleop demo.launch.py port:=/dev/ttyUSB0
+   ```
+   Debe abrirse la ventana de turtlesim y salir `Puerto /dev/ttyUSB0 abierto`. Con la regla udev instalada basta `ros2 launch cyd_teleop demo.launch.py` (usa `/dev/esp32_tactil`).
+
+4. **Toca la pantalla**: FWD avanza, BACK retrocede, LEFT/RIGHT giran. Al soltar, la tortuga se detiene.
+
+5. **Mira qué pasa por dentro** en otra terminal (con los mismos dos `source`):
+   ```bash
+   ros2 topic echo /tactil/raw          # la letra tal como llega del serial
+   ros2 topic echo /turtle1/cmd_vel     # el Twist que recibe turtlesim
+   ros2 topic hz /turtle1/cmd_vel       # ~20 Hz, el ritmo del firmware
+   rqt_graph                            # el grafo de nodos y tópicos
+   ```
+   Todas las terminales deben tener el mismo `ROS_DOMAIN_ID` (compruébalo con `echo $ROS_DOMAIN_ID`).
+
+6. **Para cerrar**: `Ctrl+C` en la terminal del launch. La tortuga recibe un Twist en cero y el puerto queda libre.
+
+Si desconectas el USB en plena demo, la tortuga frena en 0,5 s y el nodo reintenta abrir el puerto cada 2 s hasta que vuelvas a conectarlo.
+
+### Lanzar los nodos por separado (para cambiar parámetros)
+
+```bash
+ros2 run turtlesim turtlesim_node                     # terminal 1
+ros2 run cyd_teleop driver_tactil --ros-args \
+  -p port:=/dev/ttyUSB0 -p linear_speed:=1.0 -p angular_speed:=1.5   # terminal 2
+```
+
+Parámetros de `driver_tactil`: `port` (`/dev/esp32_tactil`), `baud` (115200), `linear_speed` (2.0), `angular_speed` (2.0), `timeout_s` (0.5: si no llegan letras válidas, publica un Twist en cero), `cmd_topic` (`/turtle1/cmd_vel`).
 
 ## Errores típicos
 
 - **`Permission denied` en el puerto**: falta el grupo `dialout` o no cerraste sesión tras agregarlo (verifica con `groups`).
 - **El puerto cambia de nombre** (`ttyUSB0` → `ttyUSB1`): usa `/dev/esp32_tactil` de la regla udev en vez de `ttyUSBx`.
-- **Dos lectores en el mismo puerto**: no corras `cat /dev/ttyUSB0`, `screen` ni el monitor serial de Arduino con el nodo abierto; se reparten los bytes y llegan letras cortadas.
+- **Dos lectores en el mismo puerto**: no corras `cat /dev/ttyUSB0`, `screen` ni el monitor serial de Arduino con el nodo abierto; se reparten los bytes y llegan letras cortadas, o el nodo no abre (`Device or resource busy`, ver `fuser -v /dev/ttyUSB0`).
+- **`lsusb` no muestra el CH340**: cable solo de carga o USB-C con cable C a C; prueba un cable USB-A a USB-C o el micro-USB. Para verlo en vivo al enchufar: `journalctl -kf`.
 - **turtlesim no se mueve aunque hay mensajes**: QoS o tipo distintos; compara publicador y suscriptor con `ros2 topic info -v /turtle1/cmd_vel`.
