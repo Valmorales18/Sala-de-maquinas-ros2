@@ -30,15 +30,30 @@ El firmware envía una letra por línea (`\r\n`): `F` adelante, `B` atrás, `L` 
 
 ## Linux
 
-```bash
-# 1. Permisos del puerto serial (después hay que CERRAR SESIÓN y volver a entrar)
-sudo usermod -aG dialout $USER
+Permisos del puerto serial (después hay que CERRAR SESIÓN y volver a entrar):
 
-# 2. Regla udev -> /dev/esp32_tactil
+```bash
+sudo usermod -aG dialout $USER
+```
+
+### Regla udev (opcional)
+
+> ℹ️ **La regla udev NO es obligatoria.** Sin ella todo funciona, pero **siempre hay que indicar el puerto** al lanzar: `port:=/dev/ttyUSB0`. Si lo olvidas, el nodo busca `/dev/esp32_tactil`, que no existe, y se queda reintentando cada 2 s sin mover la tortuga.
+
+| | Sin regla udev | Con regla udev |
+|---|---|---|
+| Comando | `ros2 launch cyd_teleop demo.launch.py port:=/dev/ttyUSB0` | `ros2 launch cyd_teleop demo.launch.py` |
+| Si el puerto cambia a `ttyUSB1` | Hay que relanzar con el número nuevo (`ls /dev/ttyUSB*`) | El enlace `/dev/esp32_tactil` lo sigue solo |
+
+Para instalarla (requiere `sudo`, cada comando en **una sola línea**):
+
+```bash
 sudo cp udev/99-esp32-tactil.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ls -l /dev/esp32_tactil
 ```
+
+Para quitarla: `sudo rm /etc/udev/rules.d/99-esp32-tactil.rules && sudo udevadm control --reload-rules`.
 
 **brltty** (lector de braille) reclama el CH340 porque comparte VID:PID con un dispositivo braille: el puerto aparece y desaparece al instante. Se detecta con:
 
@@ -80,7 +95,9 @@ Pruebas: `colcon test --packages-select cyd_teleop && colcon test-result --verbo
    source install/setup.bash
    ros2 launch cyd_teleop demo.launch.py port:=/dev/ttyUSB0
    ```
-   Debe abrirse la ventana de turtlesim y salir `Puerto /dev/ttyUSB0 abierto`. Con la regla udev instalada basta `ros2 launch cyd_teleop demo.launch.py` (usa `/dev/esp32_tactil`).
+   Debe abrirse la ventana de turtlesim y salir `Puerto /dev/ttyUSB0 abierto`.
+
+   > ⚠️ **No olvides `port:=/dev/ttyUSB0`** si no instalaste la regla udev. Si el CYD salió con otro número en el paso 1 (`ttyUSB1`...), usa ese. Solo con la regla instalada puedes omitir `port:=`.
 
 4. **Toca la pantalla**: FWD avanza, BACK retrocede, LEFT/RIGHT giran. Al soltar, la tortuga se detiene.
 
@@ -110,7 +127,8 @@ Parámetros de `driver_tactil`: `port` (`/dev/esp32_tactil`), `baud` (115200), `
 ## Errores típicos
 
 - **`Permission denied` en el puerto**: falta el grupo `dialout` o no cerraste sesión tras agregarlo (verifica con `groups`).
-- **El puerto cambia de nombre** (`ttyUSB0` → `ttyUSB1`): usa `/dev/esp32_tactil` de la regla udev en vez de `ttyUSBx`.
+- **`No se pudo abrir /dev/esp32_tactil ... No such file or directory`**: lanzaste sin `port:=` y no tienes la regla udev; agrega `port:=/dev/ttyUSB0`.
+- **El puerto cambia de nombre** (`ttyUSB0` → `ttyUSB1`): relanza con el número nuevo (`ls /dev/ttyUSB*`), o instala la regla udev para usar `/dev/esp32_tactil`.
 - **Dos lectores en el mismo puerto**: no corras `cat /dev/ttyUSB0`, `screen` ni el monitor serial de Arduino con el nodo abierto; se reparten los bytes y llegan letras cortadas, o el nodo no abre (`Device or resource busy`, ver `fuser -v /dev/ttyUSB0`).
 - **`lsusb` no muestra el CH340**: cable solo de carga o USB-C con cable C a C; prueba un cable USB-A a USB-C o el micro-USB. Para verlo en vivo al enchufar: `journalctl -kf`.
 - **turtlesim no se mueve aunque hay mensajes**: QoS o tipo distintos; compara publicador y suscriptor con `ros2 topic info -v /turtle1/cmd_vel`.
