@@ -35,7 +35,7 @@ Se abre turtlesim. En otra terminal, mueve la tortuga sin celular:
 echo F | nc -u -w0 127.0.0.1 5005
 ```
 
-Para usar el celular, [instala la app](docs/app-android.md#instalar) y sigue [los transportes](docs/transportes.md).
+Para usar el celular, [descarga el APK](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest) ([cómo instalarlo](docs/app-android.md#instalar)) y sigue [los transportes](docs/transportes.md).
 
 ## Documentación
 

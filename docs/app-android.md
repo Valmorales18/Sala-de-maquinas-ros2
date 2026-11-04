@@ -10,12 +10,18 @@ Para conectarla al PC, ver [transportes](transportes.md).
 
 ## Instalar
 
-Si ya tienes el APK, en Kubuntu solo hace falta `adb`. Activa la depuración USB en el celular y corre:
+Descarga el APK firmado desde [la última versión publicada](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest).
+
+**Desde el celular:** abre ese enlace, descarga `turtle-pad-v<versión>.apk` y ábrelo. Android puede pedirte que permitas instalar apps de esa fuente.
+
+**Desde Kubuntu:** activa la depuración USB en el celular, descarga el APK en el PC y corre esto en la carpeta donde quedó (aquí, la versión 1.0):
 
 ```bash
 sudo apt install adb
-adb install -r app-debug.apk
+adb install -r turtle-pad-v1.0.apk
 ```
+
+Si el celular tiene una versión compilada en modo depuración, desinstálala primero con `adb uninstall com.salademaquinas.turtlepad`: tiene otra firma y Android rechaza instalar encima. Al desinstalar se borran los ajustes de la app.
 
 ## Compilar
 

@@ -43,7 +43,7 @@ Hazlo una vez en el PC de la charla, con tiempo.
   bluetoothctl devices
   bluetoothctl --timeout 45 pair <MAC>
   ```
-- [ ] **Instalar la app** y abrirla una vez en cada modo para conceder los permisos.
+- [ ] **Instalar la app** desde [la última versión publicada](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest) y abrirla una vez en cada modo para conceder los permisos.
 - [ ] **Ensayar los tres transportes completos en este PC.** Ver [qué falta confirmar](#qué-falta-confirmar-en-kubuntu).
 
 La MAC del Infinix usado en las pruebas es `44:E7:61:94:62:B0`. Si usas otro celular, cambia `<MAC>` por la suya.
