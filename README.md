@@ -70,7 +70,8 @@ Si no usas un display braille, quítalo: `sudo apt remove brltty` (o `sudo syste
 ### Compilar (una vez, y cada vez que cambies el código)
 
 ```bash
-cd ~/Documentos/ROS_MEETUP_CARTAGENA/ros2_ws
+git clone https://github.com/Valmorales18/Sala-de-maquinas-ros2.git ~/Sala-de-maquinas-ros2   # solo la primera vez
+cd ~/Sala-de-maquinas-ros2/ros2_ws
 source /opt/ros/lyrical/setup.bash
 colcon build
 ```
@@ -90,7 +91,7 @@ Pruebas: `colcon test --packages-select cyd_teleop && colcon test-result --verbo
 
 3. **Lanza turtlesim + el driver** en una terminal:
    ```bash
-   cd ~/Documentos/ROS_MEETUP_CARTAGENA/ros2_ws
+   cd ~/Sala-de-maquinas-ros2/ros2_ws
    source /opt/ros/lyrical/setup.bash
    source install/setup.bash
    ros2 launch cyd_teleop demo.launch.py port:=/dev/ttyUSB0
