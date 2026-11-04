@@ -223,6 +223,7 @@ Android elige el canal RFCOMM al abrir el servidor, así que hay que preguntarlo
 - **La app marca 20 paq/s pero el nodo no recibe nada**: casi siempre es el firewall del PC. `sudo ufw status`; para permitirlo: `sudo ufw allow 5005/udp`.
 - **Cambia la IP o el nombre de la interfaz** (`enx<MAC>` depende del celular): no afecta, porque el nodo escucha en `0.0.0.0`, también si la interfaz aparece después de lanzarlo. No fijes `udp_bind` a una IP: se rompe al cambiar y no recibe broadcast.
 - **El broadcast no llega por Wi-Fi**: la red lo bloquea o aísla a los clientes. Usa IP manual o el anclaje USB.
+- **`ros2 topic hz` marca ~40 Hz en vez de 20**: el PC tiene dos interfaces en la misma subred (p. ej. cable y Wi-Fi) y el broadcast entra por las dos. La tortuga funciona, pero para la demo desconecta una o usa IP manual.
 - **Android 17 y `Android bloqueó el envío`**: falta el permiso de dispositivos cercanos, que ahora también cubre la red local. Concédelo desde el botón de la app o en Ajustes.
 - **`No hay interfaz USB`** en la app: el anclaje no está activo, o el celular usa un nombre de interfaz no reconocido. Usa IP manual.
 
