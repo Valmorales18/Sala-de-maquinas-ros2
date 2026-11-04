@@ -3,7 +3,7 @@
 <package format="3">
   <name>cyd_teleop</name>
   <version>0.1.0</version>
-  <description>Teleoperación de turtlesim con la pantalla táctil del ESP32-2432S028 (CYD) por serial.</description>
+  <description>Teleoperación de turtlesim con la pantalla táctil del ESP32-2432S028 (CYD) por serial, o con la app Android por UDP o Bluetooth.</description>
   <maintainer email="vmoralesrios28@gmail.com">Valentina Morales Rios</maintainer>
   <license>MIT</license>
 

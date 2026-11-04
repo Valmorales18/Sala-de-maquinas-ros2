@@ -17,7 +17,7 @@ setup(
     zip_safe=True,
     maintainer='Valentina Morales Rios',
     maintainer_email='vmoralesrios28@gmail.com',
-    description='Teleoperación de turtlesim con la pantalla táctil del CYD por serial.',
+    description='Teleoperación de turtlesim con el CYD por serial o la app Android por UDP o Bluetooth.',
     license='MIT',
     extras_require={'test': ['pytest']},
     entry_points={
