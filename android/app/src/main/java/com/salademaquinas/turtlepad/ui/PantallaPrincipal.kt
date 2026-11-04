@@ -14,7 +14,7 @@ import com.salademaquinas.turtlepad.ui.theme.Fuentes
 private val estiloTexto = TextStyle(fontFamily = Fuentes.textos)
 
 @Composable
-fun PantallaPrincipal(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPermisoRed: () -> Unit) {
+fun PantallaPrincipal(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPermisos: () -> Unit) {
     val presentacionTerminada by modelo.presentacionTerminada.collectAsStateWithLifecycle()
 
     MaterialTheme(
@@ -26,7 +26,7 @@ fun PantallaPrincipal(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPerm
         ),
     ) {
         if (presentacionTerminada) {
-            PantallaControl(modelo, alPresionar, alPedirPermisoRed)
+            PantallaControl(modelo, alPresionar, alPedirPermisos)
         } else {
             PantallaPresentacion(modelo::terminarPresentacion)
         }

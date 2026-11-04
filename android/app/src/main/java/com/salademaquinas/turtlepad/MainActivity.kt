@@ -21,19 +21,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.salademaquinas.turtlepad.ui.PantallaPrincipal
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 private const val DURACION_VIBRACION_MS = 25L
+private const val API_ANDROID_12 = 31
 private const val API_ANDROID_17 = 37
 
 class MainActivity : ComponentActivity() {
     private val modelo: PadViewModel by viewModels()
 
-    private val pedirPermisoRed = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()) { concedido ->
-        modelo.permisoRed.value = concedido
-    }
+    private val pedirPermisosDelSistema = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()) { actualizarPermisos() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -45,17 +47,19 @@ class MainActivity : ComponentActivity() {
             hide(WindowInsetsCompat.Type.systemBars())
         }
 
-        modelo.permisoRed.value = tienePermisoRed()
+        actualizarPermisos()
+        // Pide solo lo que necesita la conexión elegida, y una vez por cada cambio
         lifecycleScope.launch {
             modelo.presentacionTerminada.first { it }
-            if (!tienePermisoRed()) pedirPermisoDeRed()
+            modelo.ajustes.filterNotNull().map { it.conexion }.distinctUntilChanged()
+                .collect { pedirPermisos(it) }
         }
 
         // STARTED: al pasar a segundo plano se cancela, envía S y deja de enviar
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 modelo.presentacionTerminada.first { it }
-                modelo.permisoRed.value = tienePermisoRed()
+                actualizarPermisos()
                 modelo.enviarMientrasVisible()
             }
         }
@@ -64,19 +68,32 @@ class MainActivity : ComponentActivity() {
             PantallaPrincipal(
                 modelo = modelo,
                 alPresionar = ::vibrar,
-                alPedirPermisoRed = ::pedirPermisoDeRed,
+                alPedirPermisos = { modelo.ajustes.value?.conexion?.let(::pedirPermisos) },
             )
         }
     }
 
-    private fun tienePermisoRed(): Boolean =
-        Build.VERSION.SDK_INT < API_ANDROID_17 ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) ==
-            PackageManager.PERMISSION_GRANTED
+    private fun concedido(permiso: String) =
+        ContextCompat.checkSelfPermission(this, permiso) == PackageManager.PERMISSION_GRANTED
 
-    private fun pedirPermisoDeRed() {
-        if (Build.VERSION.SDK_INT >= API_ANDROID_17) {
-            pedirPermisoRed.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+    private fun tienePermisoRed() =
+        Build.VERSION.SDK_INT < API_ANDROID_17 || concedido(Manifest.permission.ACCESS_LOCAL_NETWORK)
+
+    private fun tienePermisoBluetooth() =
+        Build.VERSION.SDK_INT < API_ANDROID_12 || concedido(Manifest.permission.BLUETOOTH_CONNECT)
+
+    private fun actualizarPermisos() {
+        modelo.permisoRed.value = tienePermisoRed()
+        modelo.permisoBluetooth.value = tienePermisoBluetooth()
+    }
+
+    private fun pedirPermisos(conexion: Conexion) {
+        if (conexion == Conexion.BLUETOOTH) {
+            if (!tienePermisoBluetooth()) {
+                pedirPermisosDelSistema.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
+            }
+        } else if (!tienePermisoRed()) {
+            pedirPermisosDelSistema.launch(arrayOf(Manifest.permission.ACCESS_LOCAL_NETWORK))
         }
     }
 

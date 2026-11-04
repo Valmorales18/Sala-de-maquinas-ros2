@@ -80,11 +80,12 @@ private val BOTONES = listOf(
 )
 
 @Composable
-fun PantallaControl(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPermisoRed: () -> Unit) {
+fun PantallaControl(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPermisos: () -> Unit) {
     val letra by modelo.mando.letra.collectAsStateWithLifecycle()
     val ajustes by modelo.ajustes.collectAsStateWithLifecycle()
     val estado by modelo.estado.collectAsStateWithLifecycle()
     val permisoRed by modelo.permisoRed.collectAsStateWithLifecycle()
+    val permisoBluetooth by modelo.permisoBluetooth.collectAsStateWithLifecycle()
     var mostrarAcercaDe by rememberSaveable { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize().fondoSemitono()) {
@@ -101,8 +102,8 @@ fun PantallaControl(modelo: PadViewModel, alPresionar: () -> Unit, alPedirPermis
                 PanelAjustes(
                     ajustes = a,
                     modelo = modelo,
-                    faltaPermisoRed = !permisoRed && a.conexion != Conexion.BLUETOOTH,
-                    alPedirPermisoRed = alPedirPermisoRed,
+                    faltaPermiso = if (a.conexion == Conexion.BLUETOOTH) !permisoBluetooth else !permisoRed,
+                    alPedirPermisos = alPedirPermisos,
                 )
             }
 
@@ -346,8 +347,8 @@ private fun Panel(modifier: Modifier = Modifier, contenido: @Composable () -> Un
 private fun PanelAjustes(
     ajustes: Ajustes,
     modelo: PadViewModel,
-    faltaPermisoRed: Boolean,
-    alPedirPermisoRed: () -> Unit,
+    faltaPermiso: Boolean,
+    alPedirPermisos: () -> Unit,
 ) {
     Panel {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -377,8 +378,8 @@ private fun PanelAjustes(
             }
         }
 
-        if (faltaPermisoRed) {
-            BotonOpcion(Textos.PEDIR_PERMISO, false, Modifier.fillMaxWidth(), alPedirPermisoRed)
+        if (faltaPermiso) {
+            BotonOpcion(Textos.PEDIR_PERMISO, false, Modifier.fillMaxWidth(), alPedirPermisos)
         }
     }
 }

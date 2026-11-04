@@ -45,6 +45,11 @@ class PadViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
     /** Android 17: hay que concederlo antes de tocar la red local. */
     val permisoRed = MutableStateFlow(true)
 
+    /** Android 12+: hay que concederlo antes de abrir el servidor SPP. */
+    val permisoBluetooth = MutableStateFlow(true)
+
+    private val servidorBluetooth by lazy { TransporteBluetooth(aplicacion) }
+
     /** Preselecciona lo que encontró la presentación; si no encontró nada, deja lo guardado. */
     fun terminarPresentacion(disponible: Conexion?) = viewModelScope.launch {
         disponible?.let { repositorio.guardarConexion(it) }
@@ -62,23 +67,29 @@ class PadViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
      */
     suspend fun enviarMientrasVisible() {
         try {
-            combine(repositorio.ajustes, permisoRed, ::Pair)
+            combine(repositorio.ajustes, permisoRed, permisoBluetooth, ::Triple)
                 .distinctUntilChanged()
-                .collectLatest { (ajustes, permiso) ->
-                    withContext(Dispatchers.IO) { enviarCon(ajustes, permiso) }
+                .collectLatest { (ajustes, red, bluetooth) ->
+                    withContext(Dispatchers.IO) { enviarCon(ajustes, red, bluetooth) }
                 }
         } finally {
             mando.soltarTodo()
         }
     }
 
-    private suspend fun enviarCon(ajustes: Ajustes, permiso: Boolean) {
-        val necesitaRed = ajustes.conexion != Conexion.BLUETOOTH
-        if (necesitaRed && !permiso) {
-            _estado.value = EstadoEnvio(error = Textos.ERROR_PERMISO_RED)
+    private suspend fun enviarCon(ajustes: Ajustes, permisoRed: Boolean, permisoBluetooth: Boolean) {
+        val usaBluetooth = ajustes.conexion == Conexion.BLUETOOTH
+        if (!usaBluetooth) servidorBluetooth.detener()
+        val faltante = when {
+            usaBluetooth && !permisoBluetooth -> Textos.ERROR_PERMISO_BLUETOOTH
+            !usaBluetooth && !permisoRed -> Textos.ERROR_PERMISO_RED
+            else -> null
+        }
+        if (faltante != null) {
+            _estado.value = EstadoEnvio(error = faltante)
             return
         }
-        val transporte = crearTransporte(ajustes) ?: return
+        val transporte = crearTransporte(ajustes)
         try {
             bucleDeEnvio(transporte)
         } finally {
@@ -90,9 +101,13 @@ class PadViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
         }
     }
 
-    private fun crearTransporte(ajustes: Ajustes): Transporte? = when (ajustes.conexion) {
+    private fun crearTransporte(ajustes: Ajustes): Transporte = when (ajustes.conexion) {
         Conexion.USB, Conexion.WIFI -> TransporteUdp(getApplication(), ajustes)
-        Conexion.BLUETOOTH -> null
+        Conexion.BLUETOOTH -> servidorBluetooth.also { it.iniciar() }
+    }
+
+    override fun onCleared() {
+        servidorBluetooth.detener()
     }
 
     /** Periodo fijo con hora absoluta: enviar tarde en un ciclo no atrasa los siguientes. */

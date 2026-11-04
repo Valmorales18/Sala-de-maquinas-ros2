@@ -67,7 +67,17 @@ object Textos {
     const val CREDITO_TUX = "Tux: Larry Ewing, creado con The GIMP"
     const val CERRAR = "Cerrar"
 
+    // ---------- Bluetooth ----------
+    const val BT_ESPERANDO = "esperando conexión"
+    const val BT_CONECTADO = "conectado"
+    const val BT_CANAL = "canal"
+
     // ---------- Errores ----------
+    const val ERROR_PERMISO_BLUETOOTH =
+        "Falta el permiso de Bluetooth (si no aparece el aviso: Ajustes › Apps › Turtle Pad › Permisos)"
+    const val ERROR_SIN_BLUETOOTH = "Este celular no tiene Bluetooth"
+    const val ERROR_BLUETOOTH_APAGADO = "El Bluetooth está apagado: actívalo en el celular"
+    const val ERROR_SERVIDOR_BLUETOOTH = "No se pudo abrir el servidor Bluetooth; reintentando"
     const val ERROR_PERMISO_RED =
         "Falta el permiso de red local (si no aparece el aviso: Ajustes › Apps › Turtle Pad › Permisos)"
     const val ERROR_RED_BLOQUEADA = "Android bloqueó el envío: revisa el permiso de red local"
