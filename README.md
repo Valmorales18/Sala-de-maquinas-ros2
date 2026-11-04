@@ -136,11 +136,13 @@ echo F | nc -u -w0 127.0.0.1 5005                      # terminal 2: la tortuga 
 
 ## App Android
 
+Para la charla, sigue la guía [`docs/demo-en-vivo.md`](docs/demo-en-vivo.md).
+
 Se dañó la pantalla del CYD, así que `android/` tiene **Turtle Pad**, una app que manda exactamente el mismo protocolo (una letra por línea, a 20 Hz). El CYD sigue siendo un transporte válido.
 
 | Transporte | Lo que se ve en Linux | Nodo |
 |---|---|---|
-| USB (anclaje) | `usb0` o `enx…` (`rndis_host`/`cdc_ncm`) | `transport:=udp` |
+| USB (anclaje) | `enp…`, `enx…` o `usb0` (`rndis_host`/`cdc_ncm`) | `transport:=udp` |
 | Wi-Fi | la interfaz Wi-Fi de siempre | `transport:=udp` |
 | Bluetooth | `/dev/rfcomm0` | `port:=/dev/rfcomm0` (modo serial) |
 
@@ -178,7 +180,7 @@ gh release create v1.0 android/app/build/outputs/apk/release/turtle-pad-v1.0.apk
 2. Míralo en Linux:
    ```bash
    sudo dmesg | grep -iE 'rndis|cdc_ncm'
-   ip -br addr                 # aparece usb0 o enx<MAC> con una IP
+   ip -br addr                 # aparece enp…, enx… o usb0 con una IP
    ```
 3. Lanza el nodo y elige **USB (anclaje)** en la app:
    ```bash
@@ -222,7 +224,7 @@ Android elige el canal RFCOMM al abrir el servidor, así que hay que preguntarlo
 
 - **`Address already in use`**: otro proceso tiene el puerto. Míralo con `ss -ulpn | grep 5005`. El nodo reintenta cada 2 s y abre solo cuando se libere.
 - **La app marca 20 paq/s pero el nodo no recibe nada**: casi siempre es el firewall del PC. `sudo ufw status`; para permitirlo: `sudo ufw allow 5005/udp`.
-- **Cambia la IP o el nombre de la interfaz** (`enx<MAC>` depende del celular): no afecta, porque el nodo escucha en `0.0.0.0`, también si la interfaz aparece después de lanzarlo. No fijes `udp_bind` a una IP: se rompe al cambiar y no recibe broadcast.
+- **Cambia la IP o el nombre de la interfaz** (`enp…` o `enx<MAC>` dependen del puerto USB y del celular): no afecta, porque el nodo escucha en `0.0.0.0`, también si la interfaz aparece después de lanzarlo. No fijes `udp_bind` a una IP: se rompe al cambiar y no recibe broadcast.
 - **El broadcast no llega por Wi-Fi**: la red lo bloquea o aísla a los clientes. Usa IP manual o el anclaje USB.
 - **`ros2 topic hz` marca ~40 Hz en vez de 20**: el PC tiene dos interfaces en la misma subred (p. ej. cable y Wi-Fi) y el broadcast entra por las dos. La tortuga funciona, pero para la demo desconecta una o usa IP manual.
 - **Android 17 y `Android bloqueó el envío`**: falta el permiso de dispositivos cercanos, que ahora también cubre la red local. Concédelo desde el botón de la app o en Ajustes.
