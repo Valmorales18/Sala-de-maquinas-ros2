@@ -14,6 +14,8 @@ Bluetooth      celular ─ RFCOMM ─── /dev/rfcomm0 ───────�
 
 Orden recomendado: **USB, Bluetooth y Wi-Fi al final**. USB no depende del lugar ni de la red, y Wi-Fi sí.
 
+Para el detalle, ver [transportes](transportes.md), [problemas](problemas.md) y [cómo instalar la app](app-android.md#instalar).
+
 ## Antes de la charla
 
 Hazlo una vez en el PC de la charla, con tiempo.
@@ -189,7 +191,7 @@ Cada plan B está pensado para resolver en menos de un minuto. Si no sale, pasa 
 | La interfaz aparece sin IP | `nmcli device` y espera unos segundos. Desactiva y activa el anclaje. |
 | La app dice `No hay interfaz USB` | Elige **IP manual** y escribe la IP del PC que da `ip -br addr`. |
 | La app marca 20 paq/s y al nodo no llega nada | `sudo ufw status`; luego `sudo ufw allow 5005/udp`. |
-| `Address already in use` | Otro proceso tiene el puerto: `ss -ulpn | grep 5005`. Ciérralo; el nodo abre solo al liberarse. |
+| `Address already in use` | Otro proceso tiene el puerto: `ss -ulpn \| grep 5005`. Ciérralo; el nodo abre solo al liberarse. |
 
 **Si nada resuelve:** pasa a Bluetooth.
 
