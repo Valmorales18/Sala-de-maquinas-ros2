@@ -122,7 +122,16 @@ ros2 run cyd_teleop driver_tactil --ros-args \
   -p port:=/dev/ttyUSB0 -p linear_speed:=1.0 -p angular_speed:=1.5   # terminal 2
 ```
 
-Parámetros de `driver_tactil`: `port` (`/dev/esp32_tactil`), `baud` (115200), `linear_speed` (2.0), `angular_speed` (2.0), `timeout_s` (0.5: si no llegan letras válidas, publica un Twist en cero), `cmd_topic` (`/turtle1/cmd_vel`).
+Parámetros de `driver_tactil`: `transport` (`serial`; o `udp`), `port` (`/dev/esp32_tactil`), `baud` (115200), `udp_port` (5005), `udp_bind` (`0.0.0.0`), `linear_speed` (2.0), `angular_speed` (2.0), `timeout_s` (0.5: si no llegan letras válidas, publica un Twist en cero), `cmd_topic` (`/turtle1/cmd_vel`).
+
+### Probar la versión de red sin celular
+
+Con `transport:=udp`, el nodo escucha datagramas con el mismo protocolo (una letra por línea). Para mover la tortuga desde la misma máquina:
+
+```bash
+ros2 launch cyd_teleop demo.launch.py transport:=udp   # terminal 1
+echo F | nc -u -w0 127.0.0.1 5005                      # terminal 2: la tortuga avanza un poco
+```
 
 ## Errores típicos
 
