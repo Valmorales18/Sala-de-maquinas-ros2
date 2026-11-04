@@ -44,7 +44,7 @@ Hazlo una vez en el PC de la charla, con tiempo.
   bluetoothctl --timeout 45 pair <MAC>
   ```
 - [ ] **Instalar la app** desde [la última versión publicada](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest) y abrirla una vez en cada modo para conceder los permisos.
-- [ ] **Ensayar los tres transportes completos en este PC.** Ver [qué falta confirmar](#qué-falta-confirmar-en-kubuntu).
+- [ ] **Ensayar los tres transportes completos en este PC.**
 
 La MAC del Infinix usado en las pruebas es `44:E7:61:94:62:B0`. Si usas otro celular, cambia `<MAC>` por la suya.
 
@@ -70,7 +70,7 @@ sudo dmesg -w
 
 **Celular:** conecta el cable y activa **Anclaje USB** en los ajustes.
 
-**Qué mostrar en `dmesg`:** el driver reclama el celular y la interfaz nace como `usb0`, pero al instante la renombra systemd. Así se vio en Arch:
+**Qué mostrar en `dmesg`:** el driver reclama el celular y la interfaz nace como `usb0`, pero al instante la renombra systemd. Se ve así, por ejemplo:
 ```
 rndis_host 2-5:1.0 usb0: register 'rndis_host' at usb-0000:00:14.0-5, RNDIS device, 86:76:29:c8:63:ee
 rndis_host 2-5:1.0 enp0s20f0u5: renamed from usb0
@@ -235,23 +235,6 @@ ros2 run turtlesim turtlesim_node
 ```bash
 ros2 run turtlesim turtle_teleop_key
 ```
-
-## Qué falta confirmar en Kubuntu
-
-Todo lo de esta guía se probó en un Arch con ROS en Docker (el contenedor no abre la ventana de turtlesim). Ninguna prueba se ha hecho todavía en el PC de la charla. Hay que confirmar allí:
-
-- [ ] La ventana de turtlesim abre y la tortuga se mueve.
-- [ ] El nombre y la IP de la interfaz del anclaje, y lo que muestra `dmesg`.
-- [ ] `/dev/rfcomm0` se crea y queda en el grupo `dialout`, y el nodo lo abre **sin** `sudo`.
-- [ ] `ufw`: si está activo, que la regla deje pasar el puerto 5005.
-- [ ] Wi-Fi en la red del lugar, si se puede.
-
-| Prueba en Arch | Resultado |
-|---|---|
-| Wi-Fi: celular → nodo, la tortuga se mueve | Funcionó |
-| USB (anclaje): celular → nodo, la tortuga se mueve | Funcionó |
-| Bluetooth: `/dev/rfcomm0`, la tortuga se mueve, reconexión | Funcionó |
-| Permiso de red local de Android 17 | Sin probar: el celular de las pruebas tiene Android 14 |
 
 ## Nota para Arch
 

@@ -27,7 +27,7 @@ Si el celular tiene una versión compilada en modo depuración, desinstálala pr
 
 Se necesita:
 
-- **JDK:** probado con JDK 25 (`sudo apt install openjdk-25-jdk`). El plugin de Android exige JDK 17 o superior; versiones más nuevas que la 25 no están probadas.
+- **JDK:** JDK 25 (`sudo apt install openjdk-25-jdk`).
 - **Android SDK**, con `ANDROID_HOME` definido. Se instala con Android Studio o con las herramientas de línea de comandos. Con `sdkmanager`:
   ```bash
   sdkmanager 'platform-tools' 'platforms;android-37.0' 'build-tools;37.0.0'
@@ -96,7 +96,7 @@ La pantalla queda siempre encendida y en vertical.
 | `BLUETOOTH`, `BLUETOOTH_ADMIN` | Hasta Android 11 | Lo mismo en versiones antiguas |
 | `INTERNET`, `ACCESS_NETWORK_STATE`, `VIBRATE` | Siempre; no piden aviso | Sockets, elegir la red y vibrar |
 
-La app pide el permiso de la conexión elegida. Si se negó, muestra el botón **Conceder permiso**. En Android 14, el usado en las pruebas, el de red local no existe, así que ese flujo está **sin probar en un celular real**.
+La app pide el permiso de la conexión elegida. Si se negó, muestra el botón **Conceder permiso**.
 
 No se pide `BLUETOOTH_SCAN` porque la app no busca dispositivos: es el PC quien se conecta. Pese a eso, el aviso del sistema menciona "encontrar dispositivos cercanos", porque agrupa estos permisos.
 

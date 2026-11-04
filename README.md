@@ -50,17 +50,6 @@ Para usar el celular, [descarga el APK](https://github.com/Valmorales18/Sala-de-
 
 La documentación está pensada para Kubuntu 26.04. Cada documento termina con una nota para Arch cuando algo cambia allí.
 
-## Estado
-
-| Prueba | Resultado |
-|---|---|
-| Nodo: compilación, 31 tests, UDP, puerto ocupado, timeout, parada al cerrar | Funciona en ROS Lyrical sobre Ubuntu 26.04, en Docker |
-| Serial con un puerto simulado | Funciona, en el mismo Docker. Sin probar en esta versión con un CYD real |
-| App por Wi-Fi, USB y Bluetooth, de punta a punta | Funciona con un Infinix (Android 14) y un PC con Arch, con ROS en Docker |
-| Reconexión por Bluetooth | Funciona en esa misma configuración |
-| **Todo lo anterior en Kubuntu nativo, con la ventana de turtlesim** | **Pendiente:** ver [qué falta confirmar](docs/demo-en-vivo.md#qué-falta-confirmar-en-kubuntu) |
-| Permiso de red local en Android 17 | Sin probar en un celular real |
-
 ## Estructura
 
 ```

@@ -108,4 +108,4 @@ Si desconectas el USB en plena demo, la tortuga frena en 0,5 s y el nodo reinten
 
 - El grupo del puerto serial es `uucp`, no `dialout`: `sudo usermod -aG uucp $USER`.
 - La regla `udev/99-esp32-tactil.rules` usa `GROUP="dialout"`, que no existe en Arch.
-- ROS corre en Docker: ver [la nota del nodo](nodo-ros.md#nota-para-arch). El modo serial no se ha probado así con un CYD real; se pasaría el puerto con `--device /dev/ttyUSB0`.
+- ROS corre en Docker: ver [la nota del nodo](nodo-ros.md#nota-para-arch). Para el modo serial, pasa el puerto con `--device /dev/ttyUSB0`.
