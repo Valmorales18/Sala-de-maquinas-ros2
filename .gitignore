@@ -5,3 +5,8 @@ ros2_ws/log/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Llaves de firma de la app
+*.jks
+*.keystore
+keystore.properties

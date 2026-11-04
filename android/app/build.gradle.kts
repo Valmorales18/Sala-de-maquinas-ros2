@@ -1,7 +1,20 @@
+import com.android.build.api.variant.impl.VariantOutputImpl
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// La firma se lee de android/keystore.properties o de variables de entorno; nada de esto se versiona
+val propiedadesFirma = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+fun valorFirma(clave: String, variable: String): String? =
+    propiedadesFirma.getProperty(clave) ?: System.getenv(variable)
+
+val rutaLlave = valorFirma("storeFile", "TURTLEPAD_STORE_FILE")
 
 android {
     namespace = "com.salademaquinas.turtlepad"
@@ -15,9 +28,35 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        if (rutaLlave != null) {
+            create("release") {
+                storeFile = rootProject.file(rutaLlave)
+                storePassword = valorFirma("storePassword", "TURTLEPAD_STORE_PASSWORD")
+                keyAlias = valorFirma("keyAlias", "TURTLEPAD_KEY_ALIAS")
+                keyPassword = valorFirma("keyPassword", "TURTLEPAD_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variante ->
+        variante.outputs.forEach { salida ->
+            (salida as VariantOutputImpl).outputFileName.set(
+                salida.versionName.map { "turtle-pad-v$it.apk" })
+        }
     }
 }
 
