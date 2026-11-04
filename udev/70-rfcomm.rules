@@ -1,0 +1,11 @@
+# Regla opcional: da acceso a /dev/rfcomm* al usuario con sesión activa, sin tener que estar
+# en el grupo dialout (Ubuntu) o uucp (Arch) ni cerrar sesión.
+#
+# Tiene que ser anterior a 73-seat-late.rules, que es la que aplica el "uaccess".
+#
+# Instalar:
+#   sudo cp udev/70-rfcomm.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   ls -l /dev/rfcomm0 && getfacl /dev/rfcomm0
+
+KERNEL=="rfcomm[0-9]*", TAG+="uaccess"
