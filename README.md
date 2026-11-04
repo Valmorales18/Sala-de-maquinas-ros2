@@ -133,6 +133,99 @@ ros2 launch cyd_teleop demo.launch.py transport:=udp   # terminal 1
 echo F | nc -u -w0 127.0.0.1 5005                      # terminal 2: la tortuga avanza un poco
 ```
 
+## App Android
+
+Se dañó la pantalla del CYD, así que `android/` tiene **Turtle Pad**, una app que manda exactamente el mismo protocolo (una letra por línea, a 20 Hz). El CYD sigue siendo un transporte válido.
+
+| Transporte | Lo que se ve en Linux | Nodo |
+|---|---|---|
+| USB (anclaje) | `usb0` o `enx…` (`rndis_host`/`cdc_ncm`) | `transport:=udp` |
+| Wi-Fi | la interfaz Wi-Fi de siempre | `transport:=udp` |
+| Bluetooth | `/dev/rfcomm0` | `port:=/dev/rfcomm0` (modo serial) |
+
+### Compilar e instalar
+
+Requiere JDK 17 a 25 y el Android SDK con la plataforma 37 (`sdkmanager 'platforms;android-37.0'`), con `ANDROID_HOME` definido.
+
+```bash
+cd android
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Firmar el APK de release
+
+Crea la llave una sola vez y **guárdala fuera de git** (`*.jks`, `*.keystore` y `keystore.properties` están ignorados):
+
+```bash
+cd android
+keytool -genkeypair -v -keystore turtle-pad.jks -alias turtle-pad -keyalg RSA -keysize 4096 -validity 10000
+cp keystore.properties.example keystore.properties   # y pon tus contraseñas
+./gradlew assembleRelease
+$ANDROID_HOME/build-tools/37.0.0/apksigner verify --print-certs app/build/outputs/apk/release/turtle-pad-v1.0.apk
+```
+
+También se pueden usar las variables `TURTLEPAD_STORE_FILE`, `TURTLEPAD_STORE_PASSWORD`, `TURTLEPAD_KEY_ALIAS` y `TURTLEPAD_KEY_PASSWORD`. Sin llave, el APK de release sale **sin firmar** y Android no lo instala. Para publicarlo:
+
+```bash
+gh release create v1.0 android/app/build/outputs/apk/release/turtle-pad-v1.0.apk --title "Turtle Pad v1.0" --notes "App de la charla"
+```
+
+### USB (anclaje USB)
+
+1. Conecta el celular y activa **Ajustes → Zona Wi-Fi y anclaje → Anclaje USB**. El celular asigna la IP por DHCP.
+2. Míralo en Linux:
+   ```bash
+   sudo dmesg | grep -iE 'rndis|cdc_ncm'
+   ip -br addr                 # aparece usb0 o enx<MAC> con una IP
+   ```
+3. Lanza el nodo y elige **USB (anclaje)** en la app:
+   ```bash
+   ros2 launch cyd_teleop demo.launch.py transport:=udp
+   ```
+   Debe salir `Llegan datos UDP desde <IP del celular>`.
+
+### Wi-Fi
+
+1. Conecta el PC y el celular a la **misma red**.
+2. Lanza el mismo comando y elige **Wi-Fi** en la app. En modo automático envía al broadcast de la subred.
+3. Si no llega nada, usa **IP manual** con la IP del PC (`ip -br addr`): muchas redes aíslan a los clientes o bloquean el broadcast. Si la red los aísla, el plan B es el anclaje USB.
+
+### Bluetooth
+
+Android elige el canal RFCOMM al abrir el servidor, así que hay que preguntarlo por SDP. `tools/bt_rfcomm.py` lo hace y crea el dispositivo con los sockets y el `ioctl` del kernel; **no necesita** `rfcomm` ni `sdptool`, que BlueZ marcó como obsoletos, ni instalar nada.
+
+1. Con el Bluetooth activo en ambos lados, y abriendo los ajustes de Bluetooth del celular para que sea visible, empareja una sola vez:
+   ```bash
+   bluetoothctl --timeout 20 scan on
+   bluetoothctl devices                 # copia la MAC del celular
+   bluetoothctl --timeout 45 pair <MAC> # acepta el aviso en el celular
+   ```
+2. Elige **Bluetooth** en la app y concede el permiso. Debe decir `esperando conexión`.
+3. Crea el dispositivo y míralo:
+   ```bash
+   python3 tools/bt_rfcomm.py canal <MAC>       # solo informa el canal
+   sudo python3 tools/bt_rfcomm.py bind <MAC>
+   ls -l /dev/rfcomm0
+   ```
+4. Lanza el nodo con el modo serial de siempre. Al abrir el archivo se conecta y la app dice `conectado`:
+   ```bash
+   ros2 launch cyd_teleop demo.launch.py port:=/dev/rfcomm0
+   ```
+
+**Permisos:** `/dev/rfcomm0` es del grupo `dialout` en Ubuntu y `uucp` en Arch. Agrégate a ese grupo y cierra sesión, o instala la regla opcional `udev/70-rfcomm.rules`.
+
+**Si la app se reinicia**, el canal puede cambiar y `/dev/rfcomm0` queda apuntando al viejo: repite el `bind`, que siempre vuelve a preguntar. Pasar a segundo plano o cortar la conexión no cambia el canal, porque el servidor sigue abierto. Para quitar el dispositivo: `sudo python3 tools/bt_rfcomm.py release`.
+
+### Errores típicos de la versión de red
+
+- **`Address already in use`**: otro proceso tiene el puerto. Míralo con `ss -ulpn | grep 5005`. El nodo reintenta cada 2 s y abre solo cuando se libere.
+- **La app marca 20 paq/s pero el nodo no recibe nada**: casi siempre es el firewall del PC. `sudo ufw status`; para permitirlo: `sudo ufw allow 5005/udp`.
+- **Cambia la IP o el nombre de la interfaz** (`enx<MAC>` depende del celular): no afecta, porque el nodo escucha en `0.0.0.0`, también si la interfaz aparece después de lanzarlo. No fijes `udp_bind` a una IP: se rompe al cambiar y no recibe broadcast.
+- **El broadcast no llega por Wi-Fi**: la red lo bloquea o aísla a los clientes. Usa IP manual o el anclaje USB.
+- **Android 17 y `Android bloqueó el envío`**: falta el permiso de dispositivos cercanos, que ahora también cubre la red local. Concédelo desde el botón de la app o en Ajustes.
+- **`No hay interfaz USB`** en la app: el anclaje no está activo, o el celular usa un nombre de interfaz no reconocido. Usa IP manual.
+
 ## Errores típicos
 
 - **`Permission denied` en el puerto**: falta el grupo `dialout` o no cerraste sesión tras agregarlo (verifica con `groups`).
