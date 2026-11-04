@@ -1,0 +1,11 @@
+<resources>
+    <style name="Tema.TurtlePad" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/azul_cielo</item>
+    </style>
+
+    <style name="Tema.TurtlePad.Inicio" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/azul_cielo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_cruceta</item>
+        <item name="postSplashScreenTheme">@style/Tema.TurtlePad</item>
+    </style>
+</resources>
