@@ -15,38 +15,53 @@ App por BT       celular ─ RFCOMM ─── /dev/rfcomm0 ───────
 CYD por USB      ESP32 ─── CH340 ──── ch341, /dev/ttyUSB0 ───────── serial ────────┘
 ```
 
-## Inicio rápido
+## Probarlo sin celular
 
-En **Kubuntu 26.04 con ROS 2 Lyrical**:
+Necesitas **Kubuntu 26.04 con ROS 2 Lyrical**.
 
-```bash
-sudo apt install ros-lyrical-turtlesim python3-serial netcat-openbsd
-git clone https://github.com/Valmorales18/Sala-de-maquinas-ros2.git ~/Sala-de-maquinas-ros2
-cd ~/Sala-de-maquinas-ros2/ros2_ws
-source /opt/ros/lyrical/setup.bash
-colcon build
-source install/setup.bash
-ros2 launch cyd_teleop demo.launch.py transport:=udp
-```
+1. Instala lo necesario, clona el repo y compila:
 
-Se abre turtlesim. En otra terminal, mueve la tortuga sin celular:
+   ```bash
+   sudo apt install ros-lyrical-turtlesim python3-serial netcat-openbsd
+   git clone https://github.com/Valmorales18/Sala-de-maquinas-ros2.git ~/Sala-de-maquinas-ros2
+   cd ~/Sala-de-maquinas-ros2/ros2_ws
+   source /opt/ros/lyrical/setup.bash
+   colcon build
+   ```
 
-```bash
-echo F | nc -u -w0 127.0.0.1 5005
-```
+2. **Terminal 1:** lanza la demo.
 
-Para usar el celular, [descarga el APK](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest) ([cómo instalarlo](docs/app-android.md#instalar)) y sigue [los transportes](docs/transportes.md).
+   ```bash
+   cd ~/Sala-de-maquinas-ros2/ros2_ws
+   source /opt/ros/lyrical/setup.bash
+   source install/setup.bash
+   ros2 launch cyd_teleop demo.launch.py transport:=udp
+   ```
+
+   Se abre la ventana de turtlesim.
+
+3. **Terminal 2:** manda una letra.
+
+   ```bash
+   echo F | nc -u -w0 127.0.0.1 5005
+   ```
+
+   La tortuga avanza un poco y se detiene sola.
+
+## Probarlo con el celular
+
+Sigue [**Cómo correr las pruebas**](docs/correr-pruebas.md), la guía principal: instalar la app y conectar por cable, Wi-Fi y Bluetooth, paso a paso.
 
 ## Documentación
 
-| Documento | Para qué |
+| Quiero… | Documento |
 |---|---|
-| [**Demo en vivo**](docs/demo-en-vivo.md) | **La guía de la charla:** qué lanzar, en qué orden, qué mostrar y el plan B |
-| [Transportes](docs/transportes.md) | USB, Wi-Fi y Bluetooth paso a paso, y qué pasa en el kernel |
-| [App Android](docs/app-android.md) | Compilar, firmar y publicar; arquitectura y cómo cambiar el tema |
-| [Nodo ROS](docs/nodo-ros.md) | Lanzar, parámetros, tópicos, diseño y pruebas |
-| [CYD por serial](docs/firmware-cyd.md) | Firmware, udev, brltty y la demo original |
-| [Problemas](docs/problemas.md) | Errores típicos, por síntoma |
+| **Correr las pruebas con el celular** | [**Cómo correr las pruebas**](docs/correr-pruebas.md) |
+| Ver qué pasa en Linux con cada conexión, y qué mostrar en la charla | [Transportes](docs/transportes.md) |
+| Arreglar algo que no funciona | [Problemas](docs/problemas.md) |
+| Instalar, compilar o publicar la app | [App Android](docs/app-android.md) |
+| Cambiar parámetros o entender el nodo | [Nodo ROS](docs/nodo-ros.md) |
+| Usar la pantalla CYD por serial | [CYD por serial](docs/firmware-cyd.md) |
 
 La documentación está pensada para Kubuntu 26.04. Cada documento termina con una nota para Arch cuando algo cambia allí.
 

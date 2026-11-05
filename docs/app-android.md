@@ -6,88 +6,106 @@ Reemplaza la pantalla del CYD: una cruceta que manda el mismo protocolo (una let
 - **Android:** desde 8.0 (minSdk 26), con targetSdk 37 (Android 17)
 - **Probada en:** Infinix X6833B con Android 14
 
-Para conectarla al PC, ver [transportes](transportes.md).
+Si solo quieres usarla, instálala y sigue [Cómo correr las pruebas](correr-pruebas.md). El resto de esta página es para quien vaya a cambiar la app.
 
 ## Instalar
 
-Descarga el APK firmado desde [la última versión publicada](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest).
+El APK firmado está en [la última versión publicada](https://github.com/Valmorales18/Sala-de-maquinas-ros2/releases/latest).
 
-**Desde el celular:** abre ese enlace, descarga `turtle-pad-v<versión>.apk` y ábrelo. Android puede pedirte que permitas instalar apps de esa fuente.
+**Desde el celular:**
 
-**Desde Kubuntu:** activa la depuración USB en el celular, descarga el APK en el PC y corre esto en la carpeta donde quedó (aquí, la versión 1.0):
+1. Abre ese enlace y descarga `turtle-pad-v<versión>.apk`.
+2. Ábrelo. Android puede pedirte que permitas instalar apps de esa fuente.
 
-```bash
-sudo apt install adb
-adb install -r turtle-pad-v1.0.apk
-```
+**Desde Kubuntu:**
+
+1. Activa la depuración USB en el celular y conéctalo.
+2. Descarga el APK en el PC y, en la carpeta donde quedó, corre esto (aquí, la versión 1.0):
+
+   ```bash
+   sudo apt install adb
+   adb install -r turtle-pad-v1.0.apk
+   ```
 
 Si el celular tiene una versión compilada en modo depuración, desinstálala primero con `adb uninstall com.salademaquinas.turtlepad`: tiene otra firma y Android rechaza instalar encima. Al desinstalar se borran los ajustes de la app.
-
-## Compilar
-
-Se necesita:
-
-- **JDK:** JDK 25 (`sudo apt install openjdk-25-jdk`).
-- **Android SDK**, con `ANDROID_HOME` definido. Se instala con Android Studio o con las herramientas de línea de comandos. Con `sdkmanager`:
-  ```bash
-  sdkmanager 'platform-tools' 'platforms;android-37.0' 'build-tools;37.0.0'
-  ```
-
-No hace falta instalar Gradle: el proyecto trae su wrapper.
-
-```bash
-cd ~/Sala-de-maquinas-ros2/android
-./gradlew assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-
-Para editar la app, abre la carpeta `android/` en Android Studio, no la raíz del repo.
-
-### Pruebas
-
-```bash
-./gradlew testDebugUnitTest
-```
-
-Son 9 tests de la parte pura: qué letra manda el mando y a qué dirección enviar.
-
-## Firmar el APK de release
-
-Crea la llave una sola vez y **guárdala fuera de git** (`*.jks`, `*.keystore` y `keystore.properties` están ignorados):
-
-```bash
-cd ~/Sala-de-maquinas-ros2/android
-keytool -genkeypair -v -keystore turtle-pad.jks -alias turtle-pad -keyalg RSA -keysize 4096 -validity 10000
-cp keystore.properties.example keystore.properties   # y pon tus contraseñas
-./gradlew assembleRelease
-$ANDROID_HOME/build-tools/37.0.0/apksigner verify --print-certs app/build/outputs/apk/release/turtle-pad-v1.0.apk
-```
-
-También se pueden usar las variables `TURTLEPAD_STORE_FILE`, `TURTLEPAD_STORE_PASSWORD`, `TURTLEPAD_KEY_ALIAS` y `TURTLEPAD_KEY_PASSWORD`. Sin llave, el APK de release sale **sin firmar** y Android no lo instala.
-
-Sin esa llave y sus contraseñas no podrás firmar actualizaciones que se instalen encima de esa versión.
-
-## Publicar
-
-Desde la raíz del repo:
-
-```bash
-gh release create v1.0 android/app/build/outputs/apk/release/turtle-pad-v1.0.apk --title "Turtle Pad v1.0" --notes "App de la charla"
-```
-
-Para una versión nueva, sube `versionCode` y `versionName` en `android/app/build.gradle.kts`. El APK toma su nombre de `versionName`: `turtle-pad-v<versión>.apk`.
 
 ## Cómo se usa
 
 1. **Presentación:** revisa en orden USB, Wi-Fi y Bluetooth, y preselecciona el primero disponible. Dura entre 1,5 y 3 s; un toque la salta. Se repite cada vez que la app se abre desde cero, así que puede cambiar la conexión elegida.
 2. **Cruceta:** mientras presionas una flecha se envía su letra; al soltar, `S`. Con dos dedos manda el último botón. Deslizar el dedo fuera del botón también lo suelta. El círculo central muestra la letra que se envía, en rojo si es `S`.
 3. **Ajustes:** conexión; en USB y Wi-Fi, destino automático o IP manual, y puerto. Se guardan en el celular.
-4. **Barra de estado:** transporte, destino, paquetes por segundo y último error.
+4. **Barra de estado:** transporte, destino, paquetes por segundo y último error. Qué significa cada error: ver [problemas](problemas.md#app).
 5. **Segundo plano:** envía `S` y deja de enviar. Al volver, retoma.
 
 La pantalla queda siempre encendida y en vertical.
 
+## Compilar
+
+1. Instala el JDK 25:
+
+   ```bash
+   sudo apt install openjdk-25-jdk
+   ```
+
+2. Instala el Android SDK, con Android Studio o con las herramientas de línea de comandos, y define `ANDROID_HOME`. Con `sdkmanager`:
+
+   ```bash
+   sdkmanager 'platform-tools' 'platforms;android-37.0' 'build-tools;37.0.0'
+   ```
+
+3. Compila e instala. No hace falta instalar Gradle: el proyecto trae su wrapper.
+
+   ```bash
+   cd ~/Sala-de-maquinas-ros2/android
+   ./gradlew assembleDebug
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+Para editar la app, abre la carpeta `android/` en Android Studio, no la raíz del repo.
+
+### Pruebas
+
+Son 9 tests de la parte pura: qué letra manda el mando y a qué dirección enviar.
+
+```bash
+cd ~/Sala-de-maquinas-ros2/android
+./gradlew testDebugUnitTest
+```
+
+## Firmar el APK de release
+
+Sin llave, el APK de release sale **sin firmar** y Android no lo instala.
+
+1. Crea la llave una sola vez y **guárdala fuera de git** (`*.jks`, `*.keystore` y `keystore.properties` están ignorados). Sin esa llave y sus contraseñas no podrás firmar actualizaciones que se instalen encima de esa versión.
+
+   ```bash
+   cd ~/Sala-de-maquinas-ros2/android
+   keytool -genkeypair -v -keystore turtle-pad.jks -alias turtle-pad -keyalg RSA -keysize 4096 -validity 10000
+   cp keystore.properties.example keystore.properties
+   ```
+
+2. Pon tus contraseñas en `keystore.properties`. También se pueden usar las variables `TURTLEPAD_STORE_FILE`, `TURTLEPAD_STORE_PASSWORD`, `TURTLEPAD_KEY_ALIAS` y `TURTLEPAD_KEY_PASSWORD`.
+
+3. Compila y comprueba la firma:
+
+   ```bash
+   ./gradlew assembleRelease
+   $ANDROID_HOME/build-tools/37.0.0/apksigner verify --print-certs app/build/outputs/apk/release/turtle-pad-v1.0.apk
+   ```
+
+## Publicar
+
+1. Para una versión nueva, sube `versionCode` y `versionName` en `android/app/build.gradle.kts`. El APK toma su nombre de `versionName`: `turtle-pad-v<versión>.apk`.
+2. [Compila y firma](#firmar-el-apk-de-release) el APK.
+3. Desde la raíz del repo, cambiando la versión en el comando:
+
+   ```bash
+   gh release create v1.0 android/app/build/outputs/apk/release/turtle-pad-v1.0.apk --title "Turtle Pad v1.0" --notes "App de la charla"
+   ```
+
 ## Permisos
+
+La app pide el permiso de la conexión elegida. Si se negó, muestra el botón **Conceder permiso**.
 
 | Permiso | Cuándo | Para qué |
 |---|---|---|
@@ -95,8 +113,6 @@ La pantalla queda siempre encendida y en vertical.
 | `BLUETOOTH_CONNECT` | Android 12 o superior, en Bluetooth | Abrir el servidor SPP |
 | `BLUETOOTH`, `BLUETOOTH_ADMIN` | Hasta Android 11 | Lo mismo en versiones antiguas |
 | `INTERNET`, `ACCESS_NETWORK_STATE`, `VIBRATE` | Siempre; no piden aviso | Sockets, elegir la red y vibrar |
-
-La app pide el permiso de la conexión elegida. Si se negó, muestra el botón **Conceder permiso**.
 
 No se pide `BLUETOOTH_SCAN` porque la app no busca dispositivos: es el PC quien se conecta. Pese a eso, el aviso del sistema menciona "encontrar dispositivos cercanos", porque agrupa estos permisos.
 
