@@ -72,6 +72,15 @@ sudo python3 tools/bt_rfcomm.py bind <MAC> # Reemplaza <MAC> por la MAC de tu ce
 ls -l /dev/rfcomm0
 ```
 
+Con la MAC de tu cel quedaria:
+
+```bash
+cd ~/Sala-de-maquinas-ros2
+python3 tools/bt_rfcomm.py canal 0C:B9:83:FB:7E:55
+sudo python3 tools/bt_rfcomm.py bind 0C:B9:83:FB:7E:55
+ls -l /dev/rfcomm0
+```
+
 ### 3. Ahora corre el nodo de ROS con el puerto donde está llegando la info de tu bluetooth
 
 ```bash
